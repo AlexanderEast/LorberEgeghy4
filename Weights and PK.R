@@ -40,7 +40,7 @@ Simple.PK <- function(DP,kP,Vd){
   return(CP)
 }
 
-# DP = dose (ng/kg bw/day)
+# DP = dose (ng/kg bw/day) # notice its per kg BODYWEIGHT
 # CP = serum conc. ng/mL
 # Vd = volume distribution (mL/kg bw)
 # kP = elimination rate (day -1)
