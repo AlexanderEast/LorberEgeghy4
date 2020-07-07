@@ -17,7 +17,6 @@ WM <- function(x,w){
 # w = weight
 
 
-
 WSD <- function(x,wm,w){
   
 M           <- as.numeric(length(w[w > 0]))
