@@ -32,11 +32,19 @@ return(ans)
 # M = number of non zero weights
 
 
-Simple.PK <- function(DP,kP,Vd){
+Simple.Serum.PK <- function(DP,kP,Vd){
   
   CP <- DP/(kP * Vd)
   
   return(CP)
+}
+
+
+Simple.Dose.PK <- function(CP,kP,Vd){
+  
+  DP <- CP*kP*Vd
+  
+  return(DP)
 }
 
 # DP = dose (ng/kg bw/day) # notice its per kg BODYWEIGHT
@@ -48,4 +56,5 @@ Simple.PK <- function(DP,kP,Vd){
 # Test
 WM(1:5,2:6)
 WSD(1:5,0:4,2:6)
-Simple.PK(5,.0008,170)
+Simple.Serum.PK(5,.0008,170)
+Simple.Dose.PK(10,.00039,200)
