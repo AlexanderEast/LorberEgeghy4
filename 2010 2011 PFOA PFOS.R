@@ -1,4 +1,7 @@
 
+#
+# Food Range
+#
 
 
 rm(list=ls())
@@ -21,4 +24,7 @@ colnames(results)<- c("Min Median","Max Median","Range","Seed 12345 Median")
 return(results)
 }
 
-Food_Range<- foodcomparison(5,2.6)
+Food_Range<- foodcomparison(.715,2.6)
+
+# Previous PFOA PFOS calculations
+
