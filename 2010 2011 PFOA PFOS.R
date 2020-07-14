@@ -177,7 +177,7 @@ PFOS_Adult <- get.results(cards$PFOS_Adult)
 
 
 ##
-##  Investigate Dust.
+##  Investigate Dermal Dust.
 ##
 ##
 ##
