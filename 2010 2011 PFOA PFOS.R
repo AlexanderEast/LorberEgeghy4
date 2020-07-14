@@ -1,10 +1,14 @@
 
+library('rio')
+library('plyr')
+rm(list=ls())
+
+
 #
 # Food Range
 #
-library('rio')
 
-rm(list=ls())
+
 
 foodcomparison <- function(GM,GSD){
 
@@ -41,7 +45,7 @@ names(data)<-names
 rm(names)
 
 get.EF<- function(x){
-  
+x<-data$Child
 
 individual <- x$Individual
 dietgroup  <- x$`Dietary Group`
@@ -130,12 +134,65 @@ PFOA_CHILD<- cbind(PFOA,child.add)
 PFOA_ADULT<- cbind(PFOS,adult.add)
 
 
-cards<-list(PFOS_CHILD,PFOS_ADULT,PFOA_CHILD,PFOA_ADULT)
+cards<-list("PFOS_Child" = PFOS_CHILD, "PFOS_Adult" = PFOS_ADULT,
+            "PFOA_Child" = PFOA_CHILD, "PFOA_Adult" = PFOA_ADULT)
 
 rm(list=setdiff(ls(),"cards"))
 
 
+get.results<- function(x){
+x  <- lapply(as.list(1:dim(x)[1]), function(z) x[z[1],])
+
+get.summary<- function(g){
+
+n <- as.character(droplevels(g$n))
+n <- as.numeric(n)
+
+EF <- as.character(droplevels(g$Exposure_Factor))
+EF <- as.numeric(EF)
+
+set.seed(12345)
+dist <- rlnorm(n,log(g$GM),log(g$GSD))*EF
+
+dist_summary<-c(as.character(g$Route),quantile(dist,c(0,.5,.95)),mean(dist))
+names(dist_summary)<-c("Route","Min","Median","95th Percentile","Mean")
+
+return(dist_summary)
+}
+
+sum_stats<- lapply(x,get.summary)
+names(sum_stats)<- as.character(1:6)
+sum_stats<- bind_cols(sum_stats)
+
+row.names(sum_stats)<- c("Media","Min","Median","Max","Mean")
+sum_stats<- t(sum_stats)
+
+return(sum_stats)
+}
+
+PFOA_Child <- get.results(cards$PFOA_Child)
+PFOS_Child <- get.results(cards$PFOS_Child)
+PFOA_Adult <- get.results(cards$PFOA_Adult)
+PFOS_Adult <- get.results(cards$PFOS_Adult)
 
 
+##
+##  Investigate Dust.
+##
+##
+##
+##
+##
+##
+##
+##
+##
+##
+##
+##
+##
+##
+##
+##
 
 
