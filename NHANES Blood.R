@@ -55,3 +55,37 @@ bloodserum <- lapply(blood,get.blood.summary)
 
 F2014 <- bloodserum$Female.20132014
 M2014 <- bloodserum$Male.20132014
+
+
+plotme<- rbind(blood$Male.20132014,blood$Female.20132014)
+
+
+
+rm(list=setdiff(ls(),"plotme"))
+
+PFOA<- as.character(plotme$PFOA)
+PFOS<- as.character(plotme$PFOS)
+
+chem<- c(rep("PFOA",length(PFOA)),rep("PFOS",length(PFOS)))
+trueplot<- data.frame(cbind(chem,c(PFOA,PFOS)))
+colnames(trueplot)<- c("Chemical","Concentration")
+class(trueplot$Concentration)  
+trueplot$Concentration<- as.numeric(as.character(trueplot$Concentration))
+class(trueplot$Concentration)
+
+rm(list=setdiff(ls(),"trueplot"))
+
+#trueplot$Concentration<-as.numeric(trueplot$Concentration)
+
+
+library('ggplot2')
+ggplot(trueplot,aes(x=Concentration, fill=Chemical))+
+  geom_histogram(position = 'dodge',binwidth = .2)+
+  xlim(0,15)+
+  facet_grid(Gender~.) +
+  labs(title = "NHANES 2013-2014 Serum Concentration (Ages 12+)",
+       x= "Concentration (ng/mL)",
+       y= "Count")
+  
+max(trueplot$Concentration)
+
