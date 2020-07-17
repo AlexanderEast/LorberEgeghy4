@@ -89,3 +89,11 @@ ggplot(trueplot,aes(x=Concentration, fill=Chemical))+
   
 max(trueplot$Concentration)
 
+
+#
+# Note: Consider httk and carry age 
+#       in months and ethnicity to
+#       input to generate body wts.
+#
+
+
