@@ -57,11 +57,24 @@ F2014 <- bloodserum$Female.20132014
 M2014 <- bloodserum$Male.20132014
 
 
+# Result Printed (Not Exported)
+
+F2014
+M2014
+
+
+
+
+# Creation of Histogram 
+
 plotme<- rbind(blood$Male.20132014,blood$Female.20132014)
 
 
 
 rm(list=setdiff(ls(),"plotme"))
+
+
+# Tidying for Histogram
 
 PFOA<- as.character(plotme$PFOA)
 PFOS<- as.character(plotme$PFOS)
@@ -94,6 +107,6 @@ max(trueplot$Concentration)
 # Note: Consider httk and carry age 
 #       in months and ethnicity to
 #       input to generate body wts.
-#
+#       (not currently required)
 
 
