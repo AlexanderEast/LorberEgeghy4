@@ -176,23 +176,5 @@ PFOA_Adult <- get.results(cards$PFOA_Adult)
 PFOS_Adult <- get.results(cards$PFOS_Adult)
 
 
-##
-##  Investigate Dermal Dust.
-##
-##
-##
-##
-##
-##
-##
-##
-##
-##
-##
-##
-##
-##
-##
-##
 
 

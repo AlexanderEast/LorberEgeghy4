@@ -2,10 +2,8 @@
 # Weighting Formula and PK Function
 #
 # LE Model by AE & KP 7/7/2020
-# 
-
-rm(list = ls())
-
+# WSD Function from package 'radiant'
+# https://rdrr.io/cran/radiant.data/src/R/transform.R
 
 WM <- function(x,w){
   
@@ -17,16 +15,16 @@ WM <- function(x,w){
 # w = weight
 
 
-WSD <- function(x,wm,w){
-  
-M           <- as.numeric(length(w[w > 0]))
-numerator   <- sum(w*(x- wm)^2)
-denominator <- (M - 1)/M * (sum(wm))
-ans         <- numerator / denominator
-
-return(ans)                            
+WSD <- function(x, wt, na.rm = TRUE) {
+  if (na.rm) {
+    ind <- is.na(x) | is.na(wt)
+    x <- x[!ind]
+    wt <- wt[!ind]
+  }
+  wt <- wt / sum(wt)
+  wm <- weighted.mean(x, wt)
+  sqrt(sum(wt * (x - wm) ^ 2))
 }
-
 # x = mean
 # wm = weighted mean
 # M = number of non zero weights

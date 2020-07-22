@@ -76,3 +76,22 @@ sample.size.comparison<- function(GM,GSD,Reps){
 
 sample.size.comparison(100,2.3,20)
 
+
+
+
+### true medians
+
+
+# PFOA
+.715 * 13.3 * .9
+# PFOS
+1.77 * 13.3* .9 
+
+
+
+
+
+
+
+
+
