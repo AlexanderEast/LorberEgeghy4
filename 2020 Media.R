@@ -17,11 +17,22 @@ data <- read_excel('input/Input_072020.xlsx', sheet = 'Data_072020', guess_max =
 data$Media_Type<- tolower(data$Media_Type)
 data<- data[!str_detect(data$Media_Type, "effluent|groundwater|ground|sediment"),]
 
+# ______________________________ Units ______________________________ #
+
+data<- data %>%mutate(UNITFACTOR = case_when(
+  (Units %in% c("ng/m³","ng/L","ng/g","µg/kg","ug/kg","pg/mL","pg/ml")) ~ 1,
+  (Units %in% c("pg/m³","pg/g")) ~ 0.001,
+  (Units %in% c("ng/mL","ug/l","µg/L","ug/m³","µg/m³")) ~ 1000)) %>%
+  mutate_at(c("Min","Max","Median","Mean","SD","GM","GSD","P10","P25","P75","P90","P95","P99"),~.*UNITFACTOR) %>%
+  mutate(Units = case_when(
+    (Units %in% c("ug/m3","µg/m³","pg/m³","ng/m³")) ~ "ng/m³",
+    (Units %in% c("ng/mL","ug/l","ug/L","µg/l","µg/L","pg/ml","pg/mL","ng/L")) ~ "ng/L",
+    (Units %in% c("pg/g","µg/kg","ug/kg","ng/g")) ~ "ng/g")) %>%
+  select(-UNITFACTOR)
 
 # ______________________________ Estimate GM/GSD ______________________________ #
 
 numerics <- data[c("Sample_Size","Min","Max","Median","Mean","SD","GM","GSD","P10","P25","P75","P90","P95","P99")]
-
 
 # A. Estimate GM using Pleil 1.
 numerics <- numerics %>% mutate(GM = if_else(!is.na(GM),GM , Median))
@@ -185,7 +196,7 @@ individual.exposures <- function(z){
     
     set.seed(12345)
     
-    concentration <- data.frame(rlnorm(n, log(x$GM_WM), log(x$GM_WSD)))
+    concentration <- data.frame(rlnorm(n, log(x$GM_WM), abs(log(x$GM_WSD))))
     names(concentration)<- x[,1]
     
     return(concentration)
@@ -229,7 +240,12 @@ exposures<-lapply(individuals,individual.exposures)
 
 
 
+options(scipen = 1000)
 
 
+x<-t(sapply(exposures$Child,summary))
+
+dist_summary<-c(x_WM,quantile(dist,c(0,.5,.95)),mean(dist))
+names(dist_summary)<-c("True Median","Min","Median","95th Percentile","Mean")
 
 
