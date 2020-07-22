@@ -108,11 +108,6 @@ rm(numerics)
 
 # ______________________________ Concentration to Exposure ______________________________ #
 
-
-
-
-
-
 # 1. Import People 
 
 get.people <- function(){
@@ -146,10 +141,7 @@ y<- data.frame(GM_WM,GM_WSD)
 
 return(y)
 }
-
 routes<-lapply(data,weights)
-
-
 
 ## TABLE 3? IN PAPER ##
 data<- rbind.fill(data)
@@ -194,7 +186,7 @@ individual.exposures <- function(z){
   
   get.distributions <- function(x,n){
     
-    set.seed(12345)
+    set.seed(as.numeric(read_excel('input/Input_072020.xlsx', sheet = 'Seed')))
     
     concentration <- data.frame(rlnorm(n, log(x$GM_WM), abs(log(x$GM_WSD))))
     names(concentration)<- x[,1]
@@ -219,7 +211,7 @@ individual.exposures <- function(z){
   
   # Dust Absorb
   Dust_Dermal <- cbind(concentrations[str_detect(names,"Dust")]*factor_dd)
-  names(Dust_Ingest)<- str_c("Dermal ", names(Dust_Dermal))
+  names(Dust_Dermal)<- str_c("Dermal ", names(Dust_Dermal))
   
   # Soil Ingest
   Soil_Ingest <- cbind(concentrations[str_detect(names,"Soil")]*factor_s)
@@ -235,7 +227,6 @@ individual.exposures <- function(z){
   
   return(Exposures)
 }
-
 exposures<-lapply(individuals,individual.exposures)
 
 
@@ -245,7 +236,12 @@ options(scipen = 1000)
 
 x<-t(sapply(exposures$Child,summary))
 
-dist_summary<-c(x_WM,quantile(dist,c(0,.5,.95)),mean(dist))
-names(dist_summary)<-c("True Median","Min","Median","95th Percentile","Mean")
+
+y<-x[str_detect(rownames(x),c("PFOA Typical")),]
+
+
+
+
+
 
 

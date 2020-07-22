@@ -12,8 +12,8 @@ rm(list=ls())
 
 foodcomparison <- function(GM,GSD){
 
-set.seed(12345)  
-
+set.seed(as.numeric(read_excel('input/Input_072020.xlsx', sheet = 'Seed')))
+  
 ourmedian <- summary(rlnorm(200,log(GM),log(GSD)))[3]*70*.9
 
 hundredmedians<- data.frame(t(replicate(100,summary(rlnorm(200,log(GM),log(GSD))*70*.9))))
@@ -37,8 +37,7 @@ Food_Range<- foodcomparison(.715,2.6)
 
 rm(list=ls())
 
-data  <- (import_list("input/Master6_4_2020.xlsx")[("Exposure_Factors")])
-data  <- data$Exposure_Factors
+data <- read_excel('input/Input_072020.xlsx', sheet = 'Exposure Factors', guess_max = 17000)
 names <- data$Individual
 data  <- lapply(as.list(1:dim(data)[1]), function(x) data[x[1],])
 names(data)<-names
@@ -151,8 +150,8 @@ n <- as.numeric(n)
 EF <- as.character(droplevels(g$Exposure_Factor))
 EF <- as.numeric(EF)
 
-set.seed(12345)
-dist <- rlnorm(n,log(g$GM),log(g$GSD))*EF
+set.seed(as.numeric(read_excel('input/Input_072020.xlsx', sheet = 'Seed')))
+dist <- rlnorm(n,log(g$GM),log(abs(g$GSD)))*EF
 
 dist_summary<-c(as.character(g$Route),quantile(dist,c(0,.5,.95)),mean(dist))
 names(dist_summary)<-c("Route","Min","Median","95th Percentile","Mean")
@@ -176,5 +175,4 @@ PFOA_Adult <- get.results(cards$PFOA_Adult)
 PFOS_Adult <- get.results(cards$PFOS_Adult)
 
 
-
-
+PFOS_Adult

@@ -3,7 +3,7 @@
 
 foodcomparison <- function(GM,GSD){
   
-  set.seed(12345)  
+  set.seed(as.numeric(read_excel('input/Input_072020.xlsx', sheet = 'Seed')))
   
   ourmedian <- summary(rlnorm(200,log(GM),log(GSD)))[3]*70*.9
   
@@ -18,7 +18,7 @@ foodcomparison <- function(GM,GSD){
   return(results)
 }
 
-foodcomparison(.715,2.6)
+foodcomparison(1.77,2.6)
 
 
 
