@@ -1,77 +1,57 @@
-### 2020 Food
+# Food Read from Input File
 
 rm(list=ls())
 
-source('Weights and PK.R')
-library('dplyr')
-library('readxl')
 
-PFOA <- read_excel('input/Eurofood_PFOS_PFOA_072020.xlsx', sheet = 'PFOA', guess_max = 17000)
-PFOS <- read_excel('input/Eurofood_PFOS_PFOA_072020.xlsx', sheet = 'PFOS', guess_max = 17000)
+data <- read_excel('input/Input_072020.xlsx', sheet = 'EFSA Food', guess_max = 17000)
+
+source('Common.R')
 
 
-PFOAA <- PFOA[(PFOA$`Age class` == "Adults"),]
-PFOAA <- PFOAA[(complete.cases(PFOAA)),]
+individuals<-get.people()
 
-PFOSA <- PFOS[(PFOS$`Age class` == "Adults"),]
-PFOSA <- PFOSA[(complete.cases(PFOSA)),]
 
-PFOAC <- PFOA[(PFOA$`Age class` == "Other children"),]
-PFOAC <- PFOAC[(complete.cases(PFOAC)),]
+data<- data[complete.cases(data$`Number of subjects`,data$`LB Mean Exposure`,data$`LB 95th Exposure`),]
+data$`Age class`<-tolower(data$`Age class`)
 
-PFOSC <- PFOS[(PFOS$`Age class` == "Other children"),]
-PFOSC <- PFOSC[(complete.cases(PFOSC)),]
 
-rm(PFOA,PFOS,Simple.Dose.PK,Simple.Serum.PK)
+food <- function(x){
 
-get.adult.food.2020 <- function(x){
+EF.Dietgroup<- tolower(x$`Dietary Group`)
+EF.BW<-x$`Bodyweight (kg)`
+EF.n<- x$n
+agefood<- data[str_detect(EF.Dietgroup,data$`Age class`),]
+agefood<-split(agefood,agefood$Chemical)
 
+food.distribution <- function(y){
 set.seed(as.numeric(read_excel('input/Input_072020.xlsx', sheet = 'Seed')))
-  
-x$Min <- 0
-x$SD  <- x$`LB 95th Exposure` - x$Min/4
-x$GM  <- x$`LB Mean Exposure`/ (1+ .05 * (x$SD/x$`LB Mean Exposure`)^2)
 
-x_WM<-  WM(x$GM,x$`Number of subjects`)
-x_WSD<- WSD(x$GM,x$`Number of subjects`)
+y$Min <- 0
+y$SD  <- y$`LB 95th Exposure` - y$Min/4
+y$GM  <- y$`LB Mean Exposure`/ (1+ .05 * (y$SD/y$`LB Mean Exposure`)^2)
 
-dist <- (rlnorm(200,log(x_WM),abs(log(x_WSD)))) * 70 
+y_WM<-  WM(y$GM,y$`Number of subjects`)
+y_WSD<- WSD(y$GM,y$`Number of subjects`)
 
-dist_summary<-c(x_WM*70,quantile(dist,c(0,.5,.95)),mean(dist))
-names(dist_summary)<-c("True Median","Min","Median","95th Percentile","Mean")
+dist <- (rlnorm(EF.n,log(y_WM),abs(log(y_WSD)))) * EF.BW
 
-return(dist_summary)
-}
-get.child.food.2020 <- function(x){
-  
-  set.seed(12345)
-  
-  x$Min <- 0
-  x$SD  <- x$`LB 95th Exposure` - x$Min/4
-  x$GM  <- x$`LB Mean Exposure`/ (1+ .05 * (x$SD/x$`LB Mean Exposure`)^2)
-  
-  x_WM<-  WM(x$GM,x$`Number of subjects`)
-  x_WSD<- WSD(x$GM,x$`Number of subjects`)
-  
-  dist <- (rlnorm(200,log(x_WM),abs(log(x_WSD)))) * 13.3
-  
-  dist_summary<-c(x_WM* 13.3,quantile(dist,c(0,.5,.95)),mean(dist))
-  names(dist_summary)<-c("True Median","Min","Median","95th Percentile","Mean")
-  
-  
-  return(dist_summary)
+return(dist)
 }
 
-PFOA_Adults <- get.adult.food.2020(PFOAA)
-PFOS_Adults <- get.adult.food.2020(PFOSA)
-PFOA_Children <- get.child.food.2020(PFOAC)
-PFOS_Children <- get.child.food.2020(PFOSC)
+result<- data.frame(sapply(agefood,food.distribution))
+
+colnames(result)<- str_c("Exposure to Dietary ", colnames(result))
+
+return(result)
+}
 
 
-PFOA_Adults
-PFOS_Adults
-PFOA_Children
-PFOS_Children
+
+# ______________________________ Pass to Results and Boxplots.R ______________________________ #
+
+foodexposures<- lapply(individuals,food)
+rm(data,individuals,list=lsf.str())
+
+# ____________________________________________________________________________________________ #
 
 
-9+24.2+24.4
