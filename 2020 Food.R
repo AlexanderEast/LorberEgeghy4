@@ -26,7 +26,7 @@ rm(PFOA,PFOS,Simple.Dose.PK,Simple.Serum.PK)
 
 get.adult.food.2020 <- function(x){
 
-set.seed(12345)
+set.seed(as.numeric(read_excel('input/Input_072020.xlsx', sheet = 'Seed')))
   
 x$Min <- 0
 x$SD  <- x$`LB 95th Exposure` - x$Min/4

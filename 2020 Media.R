@@ -110,20 +110,13 @@ rm(numerics)
 
 # 1. Import People 
 
-get.people <- function(){
-  
-  exposurefactors <- read_excel('input/Input_072020.xlsx', sheet = 'Exposure Factors')
-  individuals<- split(exposurefactors, rownames(exposurefactors))
-  names(individuals)<-exposurefactors$Individual
-  
-  return(individuals)
-}
+source('Common.R')
+options(scipen = 1000)
 individuals <- get.people()
 
 # 2. Calculate Per Route/Media/Scenario WM/WSD
 
-source('Weights and PK.R')
-options(scipen = 1000)
+
 
 weights <- function(x){
 
