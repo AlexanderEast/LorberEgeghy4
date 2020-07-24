@@ -112,7 +112,7 @@ rm(numerics)
 
 get.people <- function(){
   
-  exposurefactors<-rbind.fill(import_list("input/Input_072020.xlsx")[c("Exposure Factors")])
+  exposurefactors <- read_excel('input/Input_072020.xlsx', sheet = 'Exposure Factors')
   individuals<- split(exposurefactors, rownames(exposurefactors))
   names(individuals)<-exposurefactors$Individual
   
@@ -122,8 +122,8 @@ individuals <- get.people()
 
 # 2. Calculate Per Route/Media/Scenario WM/WSD
 
-
 source('Weights and PK.R')
+options(scipen = 1000)
 
 weights <- function(x){
 
@@ -230,18 +230,15 @@ individual.exposures <- function(z){
 exposures<-lapply(individuals,individual.exposures)
 
 
-
-options(scipen = 1000)
-
-
-x<-t(sapply(exposures$Child,summary))
+# ______________________________ Pass to Results and Boxplots.R ______________________________ #
 
 
-y<-x[str_detect(rownames(x),c("PFOA Typical")),]
+routenames<-names(routes)
+routes<-rbind.fill(routes)
+rownames(routes)<-routenames
 
+rm(routenames,individuals,list=lsf.str())
 
-
-
-
+# ____________________________________________________________________________________________ #
 
 
