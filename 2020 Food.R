@@ -1,7 +1,5 @@
 # Food Read from Input File
 
-rm(list=ls())
-
 
 data <- read_excel('input/Input_072020.xlsx', sheet = 'EFSA Food', guess_max = 17000)
 
@@ -40,7 +38,7 @@ return(dist)
 
 result<- data.frame(sapply(agefood,food.distribution))
 
-colnames(result)<- str_c("Exposure to Dietary ", colnames(result))
+colnames(result)<- str_c("Exposure to Dietary ", colnames(result)," Typical")
 
 return(result)
 }
@@ -50,8 +48,12 @@ return(result)
 # ______________________________ Pass to Results and Boxplots.R ______________________________ #
 
 foodexposures<- lapply(individuals,food)
-rm(data,individuals,list=lsf.str())
 
 # ____________________________________________________________________________________________ #
 
-
+#
+#
+#
+# GET WM AND WSD OUT (SEE MEDIA)
+#
+#

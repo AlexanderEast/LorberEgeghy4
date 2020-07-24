@@ -1,7 +1,31 @@
 # 1. Summary Statistics and Boxplots
 
+rm(list=ls())
 
+source('2020 Media.R')
+source('2020 Food.R')
 # A. Combine food and non-food distributions. 
+
+
+
+
+exposure.distributions<<- Map(c,exposures,foodexposures)
+
+
+
+#
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

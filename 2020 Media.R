@@ -7,9 +7,6 @@ library('tidyverse')
 library('data.table')
 library('plyr')
 
-rm(list = ls())
-
-
 # ______________________________ Import ______________________________ #
 
 data <- read_excel('input/Input_072020.xlsx', sheet = 'Data_072020', guess_max = 17000)
@@ -229,8 +226,6 @@ exposures<-lapply(individuals,individual.exposures)
 routenames<-names(routes)
 routes<-rbind.fill(routes)
 rownames(routes)<-routenames
-
-rm(routenames,individuals,list=lsf.str())
 
 # ____________________________________________________________________________________________ #
 
