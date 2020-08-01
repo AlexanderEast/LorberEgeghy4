@@ -1,7 +1,6 @@
 # Food Read from Input File
 
-
-data <- read_excel('input/Input_072020.xlsx', sheet = 'EFSA Food', guess_max = 17000)
+dietary <- read_excel('input/Input_072020.xlsx', sheet = 'EFSA Food', guess_max = 17000)
 
 source('Common.R')
 
@@ -9,8 +8,8 @@ source('Common.R')
 individuals<-get.people()
 
 
-data<- data[complete.cases(data$`Number of subjects`,data$`LB Mean Exposure`,data$`LB 95th Exposure`),]
-data$`Age class`<-tolower(data$`Age class`)
+dietary<- dietary[complete.cases(dietary$`Number of subjects`,dietary$`LB Mean Exposure`,dietary$`LB 95th Exposure`),]
+dietary$`Age class`<-tolower(dietary$`Age class`)
 
 
 food <- function(x){
@@ -18,20 +17,20 @@ food <- function(x){
 EF.Dietgroup<- tolower(x$`Dietary Group`)
 EF.BW<-x$`Bodyweight (kg)`
 EF.n<- x$n
-agefood<- data[str_detect(EF.Dietgroup,data$`Age class`),]
+agefood<- dietary[(EF.Dietgroup %in% dietary$`Age class`),]
 agefood<-split(agefood,agefood$Chemical)
 
 food.distribution <- function(y){
 set.seed(as.numeric(read_excel('input/Input_072020.xlsx', sheet = 'Seed')))
-
 y$Min <- 0
 y$SD  <- y$`LB 95th Exposure` - y$Min/4
 y$GM  <- y$`LB Mean Exposure`/ (1+ .05 * (y$SD/y$`LB Mean Exposure`)^2)
+y$GSD <- exp(log(y$`LB 95th Exposure`/y$GM)/qnorm(.95))
 
 y_WM<-  WM(y$GM,y$`Number of subjects`)
-y_WSD<- WSD(y$GM,y$`Number of subjects`)
+y_WSD<- WM(y$GSD,y$`Number of subjects`)
 
-dist <- (rlnorm(EF.n,log(y_WM),abs(log(y_WSD)))) * EF.BW
+dist <- (rlnorm(EF.n,log(y_WM),log(y_WSD))) * EF.BW
 
 return(dist)
 }
@@ -51,9 +50,38 @@ foodexposures<- lapply(individuals,food)
 
 # ____________________________________________________________________________________________ #
 
-#
-#
-#
-# GET WM AND WSD OUT (SEE MEDIA)
-#
-#
+# Make Routes Output to match other media 
+
+
+food.routes<- function(x){
+
+groups<-tolower(rbind.fill(x)$`Dietary Group`)
+ages<- dietary$`Age class`
+
+dietary <- dietary[(ages %in% groups),] 
+dietary <- split(dietary, paste(dietary$Chemical,dietary$`Age class`))
+
+
+get.route.info <- function(x){
+  
+x$Min <- 0
+x$SD  <- x$`LB 95th Exposure` - x$Min/4
+x$GM  <- x$`LB Mean Exposure`/ (1+ .05 * (x$SD/x$`LB Mean Exposure`)^2)
+
+WM<-  WM(x$GM,x$`Number of subjects`)
+WSD<- WSD(x$GM,x$`Number of subjects`)
+Total<- as.numeric(nrow(x))
+
+info<- data.frame(cbind(Total,WM,WSD))
+
+return(info)
+}
+
+result<- bind_rows(lapply(dietary,get.route.info),.id = "Group")
+result$Units<-"ng/kg-bw/day"
+result <- result[,c(1,5,2,3,4)]
+result$Group <- str_c("Dietary ",result$Group)
+return(result)
+}
+
+foodroutes<- food.routes(individuals)

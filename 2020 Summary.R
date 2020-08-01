@@ -6,30 +6,27 @@
 # ______________________________  Source & Tidy  ______________________________ #
 
 rm(list=ls())
-source('2020 Food.R')
 source('2020 Media.R')
+source('2020 Food.R')
 library('rio')
 exposure.distributions<<- Map(c,exposures,foodexposures)
-rm(list=setdiff(ls(), c("data","exposure.distributions")))
-
 
 
 # ______________________________  Number of Datasets Used  ______________________________ #
 
 
-
-
-
-
-# ______________________________  Datasets used With GM/GSD  ______________________________ #
-
-
-# rearrange data columns 
+names(foodroutes)<-names(routes)
+routes<-rbind(routes,foodroutes)
+rownames(routes)<- NULL
 
 
 # ______________________________  Summary Statistics ______________________________ #
 
 for.summary <- function(x){
+
+
+
+
 x<-data.frame(x)
 colnames(x)<- str_replace_all(colnames(x),"[[:punct:]]"," ")
 
@@ -38,29 +35,43 @@ mymean   <- sapply(x,mean)
 sumstats <- cbind(mymean,sumstats)
 colnames(sumstats)<-c("Mean","Min","10th%","Median","75th%","95th","Max")
 
-
 sumstats<- signif(sumstats,5)
 rn <- rownames(sumstats)
-sumstats<- apply(sumstats, 2, as.character)
-rownames(sumstats)<-rn
 
 y<-sumstats[str_detect(rownames(sumstats),c("PFOA Typical")),]
 z<-sumstats[str_detect(rownames(sumstats),c("PFOS Typical")),]
 a<-sumstats[str_detect(rownames(sumstats),c("PFOA Contaminated")),]
 b<-sumstats[str_detect(rownames(sumstats),c("PFOS Contaminated")),]
-
 result<- data.frame(rbind(y,z,a,b))
-result$Path <- rownames(result)
-colnames(result)<-c("Mean","Min","10th %","Median","75th %","95th %","Max","Path")
-result<-result[,c(ncol(result), 1:(ncol(result)-1))]
+colnames(result)<-c("Mean","Min","10th %","Median","75th %","95th %","Max")
+
+
+# Chemical
+result$Chemical[str_detect(rownames(result),"PFOA")]<- "PFOA"
+result$Chemical[str_detect(rownames(result),"PFOS")]<- "PFOS"
+
+# Scenario
+result$Scenario[str_detect(rownames(result),"Typical")]<- "Typical"
+result$Scenario[str_detect(rownames(result),"Contaminated")]<- "Contaminated"
+
+# Route
+result$Route[str_detect(rownames(result),"Indoor Air")]     <- "Indoor Inhalation"
+result$Route[str_detect(rownames(result),"Outdoor Air")]    <- "Outdoor Inhalation"
+result$Route[str_detect(rownames(result),"Water")]          <- "Water Ingestion"
+result$Route[str_detect(rownames(result),"Soil")]           <- "Soil Ingestion"
+result$Route[str_detect(rownames(result),"Dermal Dust")]    <- "Dust Dermal"
+result$Route[str_detect(rownames(result),"Ingestion Dust")] <- "Dust Ingestion"
+result$Route[str_detect(rownames(result),"Dietary")]        <- "Dietary Ingestion"
+
+
+result<- result[,c("Chemical","Route","Scenario","Mean","Min","10th %","Median","75th %","95th %","Max")]
+rownames(result) <- NULL
 
 return(result)
 }
 
-
 summary<- bind_rows(lapply(exposure.distributions,for.summary), .id = "Group")
-summary$Path<- str_c(summary$Group," ",summary$Path)
-summary <- within(summary, rm(Group))
+
 
 # ______________________________  Tidy Generated Data  ______________________________ #
 
@@ -96,6 +107,7 @@ return(x)
 
 distdata <-bind_rows(lapply(exposure.distributions,for.boxplot), .id = "Group")
 
+
 # ______________________________  Sum Median PFOA/PFOS  ______________________________ #
 
 for.medians<-function(x){
@@ -108,25 +120,75 @@ lapply(x[(str_detect(colnames(x),"PFOA Typical")),],median)
 MedianPFOA <- sum(sapply(x[(str_detect(colnames(x),"PFOA Typical"))],median))
 MedianPFOS <- sum(sapply(x[(str_detect(colnames(x),"PFOS Typical"))],median))
 
-medians <- data.frame(c(MedianPFOA),c(MedianPFOS))
-colnames(medians)<-c("Median PFOA ng/day"," Median PFOS ng/day")
+medians <-data.frame(c(MedianPFOA),c(MedianPFOS))
+colnames(medians)<- c("Median PFOA ng/day"," Median PFOS ng/day")
 return(medians)
 }
 
 medians<- bind_rows(lapply(exposure.distributions,for.medians),.id = "Group")
 
 
+# ______________________________  PK Model  ______________________________ #
+
+CP.PK <- function(x){
+
+
+individual <- x$Individual
+wt <- x$`Bodyweight (kg)`
+
+agemedians <- medians[(str_detect(individual,medians$Group)),]
+
+dosefactors <- read_excel('input/Input_072020.xlsx', sheet = 'Dose Factors', guess_max = 17000)
+
+
+dosefactors$SDF<- dosefactors$`Vd (Volume Distribution, ml/kg bw)`*
+                  dosefactors$`kP (Elimination Rate, day -1)`
+
+PFOA_CP <- agemedians$`Median PFOA ng/day`/ dosefactors$SDF[(dosefactors$Chemical == "PFOA")]/wt
+PFOS_CP <- agemedians$`Median PFOA ng/day`/ dosefactors$SDF[(dosefactors$Chemical == "PFOS")]/wt
+
+results<- data.frame(PFOA_CP,PFOS_CP)
+names(results)<- c("PFOA Blood ng/mL", "PFOS Blood ng/mL" )
+
+return(results)
+}
+
+PK<- bind_rows(lapply(individuals,CP.PK),.id="Group")
+
+Medians.PK <- cbind(medians, PK[c(2,3)])
+rm(medians,PK)
 
 
 # ______________________________  Export Results ______________________________ #
 
-
-results<-list(medians,summary,data,distdata)
-names(results)<- c("Daily Sum Median Intake (ng)","Summary Statistics","Datasets Used","Raw Generated Data")
+results<-list(Medians.PK,summary,data,routes,distdata)
+names(results)<- c("Daily Intake and Dose","Summary Statistics","Input Data Used","Input Summary","Raw Generated Data")
 
 
 date<-Sys.Date()
 date<- str_replace_all(date,"[[:punct:]]","")
-filename <- str_c("Aggregate Intake Model Results ",date,".xlsx")
+
+time<- str_replace_all(Sys.time(),"[[:punct:]]","")
+time<- word(time,-1)
+time<- substr(time, 1, nchar(time)-2)
+
+if (time > 1159){
+  time <- as.numeric(time) - 1200
+  time <- str_c(substr(time,1,2),"",substr(time,3,4),"PM")
+} else {
+  time <- str_c(substr(time,1,2),"",substr(time,3,4),"AM")
+}
+
+key<- str_c(date," ",time)
+
+
+filename <- str_c("PFOA PFOS Intake Results ",key,".xlsx")
+
 
 export(results,filename)
+rm(list=setdiff(ls(), c("results")))
+
+
+
+
+

@@ -1,5 +1,5 @@
 # 2020 Concentration 
-
+rm(list=ls())
 library('dplyr')
 library('readxl')
 library('stringr')
@@ -103,6 +103,7 @@ names(data)<- str_replace_all(names(data),c(".1" =" Typical", ".0" = " Contamina
                                             ".PFOA" = " PFOA", ".PFOS" = " PFOS"))
 rm(numerics)
 
+
 # ______________________________ Concentration to Exposure ______________________________ #
 
 # 1. Import People 
@@ -113,8 +114,6 @@ individuals <- get.people()
 
 # 2. Calculate Per Route/Media/Scenario WM/WSD
 
-
-
 weights <- function(x){
 
 if (nrow(x) == 1){
@@ -124,17 +123,15 @@ GM_WSD<-x$GSD
 
 } else {
 GM_WM  <- WM(x$GM,x$Sample_Size)
-GM_WSD <- WSD(x$GM,x$Sample_Size)
+GM_WSD <- WM(x$GSD,x$Sample_Size)
 }
 
 y<- data.frame(GM_WM,GM_WSD)
 
 return(y)
 }
-routes<-lapply(data,weights)
 
-## TABLE 3? IN PAPER ##
-data<- rbind.fill(data)
+routes<-lapply(data,weights)
 
 
 # 3. Create Exposure Factors 
@@ -220,13 +217,26 @@ individual.exposures <- function(z){
 exposures<-lapply(individuals,individual.exposures)
 
 
-# ______________________________ Pass to Results and Boxplots.R ______________________________ #
+# ______________________________ # of Datasets Used ______________________________ #
 
-
-routenames<-names(routes)
+numberofstudies<- sapply(data, nrow)
 routes<-rbind.fill(routes)
-rownames(routes)<-routenames
+routes<-cbind(numberofstudies,routes)
+colnames(routes)<- c("Number of Datasets Used","WM","WSD")
+routes$Scenario<- rownames(routes)
+routes<-routes[c("Scenario","Number of Datasets Used","WM","WSD")]
+data<- rbind.fill(data)
+rm(numberofstudies)
+
+routes <- routes %>% mutate(Units = case_when(
+  str_detect(Scenario, "Water") ~"ng/L",
+  str_detect(Scenario, "Dust|Soil" ) ~"ng/g",
+  str_detect(Scenario,"Air") ~ "ng/m3"
+  ))
+
+routes<-routes[c(1,5,2,3,4)]
 
 # ____________________________________________________________________________________________ #
+
 
 
