@@ -75,8 +75,7 @@ factor_w <- (x$`Water Intake (L/day)`*
                x$`Water AF`)
 
 # Food Factor 
-factor_f <- (x$`Bodyweight (kg)`*x$`Dietary AF`)
-
+factor_f <- (x$`Bodyweight (kg)`)
 
 # Soil Factor
 factor_s <- (x$`Soil Ingestion (g/day)`*

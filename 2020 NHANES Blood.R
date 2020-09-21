@@ -10,7 +10,7 @@ blood <- read_excel('input/NHANES PFAS.xlsx', sheet = 'PFAS_All', guess_max = 17
 # 2. Tidy
 
 blood <- blood %>% select(Cycle, RIAGENDR, RIDAGEYR, SSNPFOA, SSBPFOA, SSNPFOS, SSMPFOS) %>%
-  filter(RIDAGEYR >= 12 & Cycle >= 20132014) 
+  filter(Cycle >= 20132014) 
 
 blood<- data.frame(blood)
 blood[is.na(blood)] <- 0
@@ -32,10 +32,10 @@ names(blood)[1:3]<- c("Year","Gender","Age")
 blood <- blood %>% mutate(PFOA = PFOA/1000,
                           PFOS = PFOS/1000)
 
-blood <- split(blood,list(blood$Gender,blood$Year))
+blood <- split(blood,list(blood$Year))
 
-
-
+summary(blood$`20132014`$PFOA)
+summary(blood$`20132014`$PFOS)
 get.blood.summary <- function(m){
   
   PFOA <- quantile(m$PFOA,c(0.1,0.5,0.95,0.99))
@@ -68,8 +68,7 @@ M2014
 # Creation of Histogram 
 
 plotme<- rbind(blood$Male.20132014,blood$Female.20132014)
-
-
+summary(plotme$PFOA)
 
 rm(list=setdiff(ls(),"plotme"))
 
@@ -85,7 +84,7 @@ colnames(trueplot)<- c("Chemical","Concentration")
 class(trueplot$Concentration)  
 trueplot$Concentration<- as.numeric(as.character(trueplot$Concentration))
 class(trueplot$Concentration)
-
+trueplot$Gender <- rep(plotme$Gender,2)
 rm(list=setdiff(ls(),"trueplot"))
 
 #trueplot$Concentration<-as.numeric(trueplot$Concentration)
@@ -94,14 +93,14 @@ rm(list=setdiff(ls(),"trueplot"))
 library('ggplot2')
 ggplot(trueplot,aes(x=Concentration, fill=Chemical))+
   geom_histogram(position = 'dodge',binwidth = .2)+
-  xlim(0,15)+
+  scale_fill_manual(values=c("#e56d74", "#6db0e5"))+
+  scale_x_continuous(breaks = seq(0, 20, 1), lim = c(0, 20))+
+  ylim(0,100)+
   facet_grid(Gender~.) +
-  labs(title = "NHANES 2013-2014 Serum Concentration (Ages 12+)",
+  labs(title = "NHANES 2013-2014 Serum Concentration for Adult Females and Males",
        x= "Concentration (ng/mL)",
        y= "Count")
   
-max(trueplot$Concentration)
-
 
 #
 # Note: Consider httk and carry age 

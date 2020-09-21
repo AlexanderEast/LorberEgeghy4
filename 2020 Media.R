@@ -9,7 +9,7 @@ library('plyr')
 
 # ______________________________ Import ______________________________ #
 
-data <- read_excel('input/Input_072020.xlsx', sheet = 'Data_072020', guess_max = 17000)
+data <- read_excel('input/Input 08142020.xlsx', sheet = 'Data_072020', guess_max = 17000)
 
 data$Media_Type<- tolower(data$Media_Type)
 data<- data[!str_detect(data$Media_Type, "effluent|groundwater|ground|sediment"),]

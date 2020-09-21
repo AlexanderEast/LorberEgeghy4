@@ -67,9 +67,9 @@ get.route.info <- function(x){
 x$Min <- 0
 x$SD  <- x$`LB 95th Exposure` - x$Min/4
 x$GM  <- x$`LB Mean Exposure`/ (1+ .05 * (x$SD/x$`LB Mean Exposure`)^2)
-
+x$GSD <- exp(log(x$`LB 95th Exposure`/x$GM)/qnorm(.95))
 WM<-  WM(x$GM,x$`Number of subjects`)
-WSD<- WSD(x$GM,x$`Number of subjects`)
+WSD<- WM(x$GSD,x$`Number of subjects`)
 Total<- as.numeric(nrow(x))
 
 info<- data.frame(cbind(Total,WM,WSD))
