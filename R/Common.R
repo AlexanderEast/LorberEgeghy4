@@ -1,7 +1,6 @@
-# 
-# Weighting Formula and PK Function
-#
-# LE Model by AE & KP 7/7/2020
+# Common Functions and PK functions for Lorber-Egeghy Model
+# AE, ORAU, 2020.
+
 # WSD Function from package 'radiant'
 # https://rdrr.io/cran/radiant.data/src/R/transform.R
 
@@ -58,7 +57,7 @@ Simple.Dose.PK(10,.00039,200)
 
 get.people <- function(){
   
-  exposurefactors <- read_excel('input/Input_072020.xlsx', sheet = 'Exposure Factors')
+  exposurefactors <- read_excel('./input/Input 09032020.xlsx', sheet = 'Exposure Factors')
   individuals<- split(exposurefactors, rownames(exposurefactors))
   names(individuals)<-exposurefactors$Individual
   

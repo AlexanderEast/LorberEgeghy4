@@ -1,14 +1,14 @@
 # PFOA / PFOS Aggregate Route Exposure Model
-# Alex East & Kosha Patel 7/27/20, ORAU/EPA
-
-
+# AE, ORAU, 2020.
 
 # ______________________________  Source & Tidy  ______________________________ #
 
 rm(list=ls())
-source('2020 Media.R')
-source('2020 Food.R')
-library('rio')
+source('./R/Packages.R')
+source('./R/Common.R')
+source('./R/Media.R')
+source('./R/Food.R')
+
 exposure.distributions<<- Map(c,exposures,foodexposures)
 
 
@@ -23,9 +23,6 @@ rownames(routes)<- NULL
 # ______________________________  Summary Statistics ______________________________ #
 
 for.summary <- function(x){
-
-
-
 
 x<-data.frame(x)
 colnames(x)<- str_replace_all(colnames(x),"[[:punct:]]"," ")
@@ -101,7 +98,7 @@ x$Route[str_detect(rownames(x),"Dietary")]        <- "Dietary Ingestion"
 names(x)[1] <- "Intake"
 rownames(x) <- NULL
 x<- x[,c("Chemical","Route","Scenario","Intake")]
-
+x$Units<- "ng/day"
 return(x)
 }
 
@@ -138,7 +135,7 @@ wt <- x$`Bodyweight (kg)`
 
 agemedians <- medians[(str_detect(individual,medians$Group)),]
 
-dosefactors <- read_excel('input/Input_072020.xlsx', sheet = 'Dose Factors', guess_max = 17000)
+dosefactors <- read_excel('./input/Input 09032020.xlsx', sheet = 'Dose Factors', guess_max = 17000)
 
 
 dosefactors$SDF<- dosefactors$`Vd (Volume Distribution, ml/kg bw)`*
