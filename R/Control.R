@@ -3,7 +3,7 @@
 
 
 
-rm(list=ls())
+
 
 
 LEM.run<-function(){
@@ -190,9 +190,11 @@ filename <- str_c("./output/PFOA PFOS Intake Results ",key,".xlsx")
 
 
 export(results,filename)
-rm(list=setdiff(ls(), c("results")))
 
 return(results)
 }
 
+
+
 results<- LEM.run()
+rm(list=setdiff(ls(), c("results")))
